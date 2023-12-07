@@ -11,7 +11,7 @@ import (
 )
 
 const LOG_DIR = "logs"
-const PERIOD_SEC = 5
+const PERIOD_MIN = 5
 
 func main() {
 	trackedProcesses := os.Args[1:]
@@ -25,13 +25,24 @@ func main() {
 		}
 	}
 
-	procs, err := process.Processes()
-	if err != nil {
-		log.Fatal(err)
+	for _, proc := range trackedProcesses {
+		file, err := os.OpenFile(fmt.Sprintf("%s/%s.csv", LOG_DIR, proc), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+		if err != nil {
+			log.Fatal(fmt.Sprintf("Open file failed: Error: %s", err))
+			os.Exit(1)
+		}
+
+		// Pre-write csv headers
+		file.Write([]byte("time,cpu,mem_rss,mem_priv,disk_read,disk_write,network_in,network_out\n"))
 	}
 
 	for {
 		processFound := false
+
+		procs, err := process.Processes()
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		for _, proc := range procs {
 			procName, err := proc.Name()
@@ -94,9 +105,8 @@ func main() {
 			os.Exit(1)
 		}
 
-		time.Sleep(PERIOD_SEC * time.Second)
+		time.Sleep(PERIOD_MIN * time.Minute)
 	}
-
 }
 
 func isTrackedProcess(procName string, trackedProcesses []string) bool {
