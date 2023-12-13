@@ -6,6 +6,7 @@ Build for you platform
 ```
     go build process-tracker.go
     GOOS=windows GOARCH=386 go build process-tracker.go
+    GOOS-linux GOARCH=386 go build process-tracker.go
 ```
 
 Execute with process you want to track
